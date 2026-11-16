@@ -5,10 +5,11 @@ import SwiftUI
 struct DetailView: View {
     let path: Pathway
     var profile: Profile? = nil
+    @EnvironmentObject private var model: AppModel
     @Environment(\.openURL) private var openURL
 
     private var result: MatchResult? {
-        profile.map { Engine.check($0, path) }
+        Engine.check(profile ?? model.profile, path)
     }
 
     var body: some View {

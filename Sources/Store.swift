@@ -80,12 +80,17 @@ final class AppModel: ObservableObject {
     }
     @Published var filters = Filters()
     @Published var page: Page = .form
+    @Published var uiStyle: UIStyle {
+        didSet { UserDefaults.standard.set(uiStyle.rawValue, forKey: "uiStyle.v1") }
+    }
 
     enum Page { case form, results }
 
     private static let key = "profile.v1"
 
     init() {
+        let saved = UserDefaults.standard.string(forKey: "uiStyle.v1")
+        uiStyle = UIStyle(rawValue: saved ?? "") ?? .dashboard
         if let data = UserDefaults.standard.data(forKey: Self.key),
            let p = try? JSONDecoder().decode(Profile.self, from: data) {
             profile = p
