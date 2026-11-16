@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数字游民签证 · 我够得着哪几个？</title>
+<meta name="description" content="把你的收入类型、能否远程、月收入档位代进去，逐条比对数字游民签证的门槛，告诉你哪条能走、哪条差什么。纯静态、开源、不收集任何数据。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>数字游民签证<br>我够得着哪几个？</h1>
+    <p class="lead">
+      逐条比对 <b id="nomadCount">0</b> 条数字游民路径的收入门槛，
+      告诉你哪条<strong>现在就能申</strong>、哪条差什么。
+    </p>
+    <p class="privacy">免费 · 无需注册 · 你填的收入信息不会离开这台设备</p>
+    <nav class="hero-alt" aria-label="快速前往专题">
+      <a href="index.html"><span>全球路径</span><small>71 条路径</small></a>
+      <a class="current" href="nomad.html" aria-current="page"><span>数字游民</span><small>收入门槛</small></a>
+      <a href="hk.html"><span>香港签证</span><small>高才通 · IANG · 专才</small></a>
+      <a href="student.html"><span>大学生专题</span><small>14 条学生路径</small></a>
+    </nav>
+    <div class="prose">
+      <p>
+        通勤一小时到工位，坐下来第一件事是想「这活儿要是能在别的地方干就好了」——
+        这个念头一旦冒出来，基本不会自己消失，只会在每个周一早上重新响一遍。
+      </p>
+      <p>
+        真到要动的时候，大多数人以为拦住自己的是勇气，或者是存款还不够多。
+        其实都不是。拦住你的是一个冷得多的问题：
+      </p>
+      <blockquote>你的收入，能不能跟着你走？</blockquote>
+      <p>
+        数字游民签证审的从来不是你账上趴着多少，
+        而是<strong>你离开之后，每个月还能不能持续赚到钱</strong>——多数国家还额外要求这笔钱来自本国以外。
+        账户里躺着二十万，和每月稳定进账三千美元，在签证官眼里是完全不同的两件事：
+        前者只说明你能撑一阵，后者才说明你住下来之后还养得活自己。
+      </p>
+      <p>
+        第二个常被跳过的问题是，<strong>它多半不通往身份。</strong>
+        这类签给的是「合法长住」，住满几年往往既不算永居年限、也不累积入籍时间。
+        如果你的目标其实是一本护照，挑错类别可能白走好几年。
+      </p>
+      <p>
+        所以下面这张表不按国家排，按<strong>门槛从低到高</strong>排，并且把三件最容易混淆的事单独标出来：
+        它要的是月收入还是账户存款、这笔钱必须来自境外吗、以及它到底通不通向永居。
+      </p>
+    </div>
+    <a class="primary btn-link" href="index.html?t=remote#form">填条件，看我能走哪条 →</a>
+  </section>
+
+  <section class="panel d-block">
+    <h2>九条路径，横着看一眼</h2>
+    <p class="notes">
+      收入门槛是<strong>每月持续收入</strong>；标「存款」的那两条要的是账户余额，性质不同。
+      金额为初筛参考值，各国按本地最低工资逐年调整，申请前务必核对官网。
+    </p>
+    <div class="table-scroll">
+      <table class="cmp" id="cmp"></table>
+    </div>
+  </section>
+
+  <section class="panel d-block d-warn">
+    <h2>三个最常见的误解</h2>
+    <ul class="d-list" id="myths"></ul>
+  </section>
+
+  <section class="panel disclaimer">
+    <h2>请务必读一下</h2>
+    <ul>
+      <li><b>税是这张表里最大的空白。</b>在一个国家住够天数通常就成了当地税务居民，可能同时要在两边申报。这一层完全不在本页覆盖范围内，动身前请单独咨询。</li>
+      <li><b>金额几乎都挂钩当地最低工资，逐年往上走。</b>这里的数字只够用来排个先后，真要递交前必须去官网重新核一遍。</li>
+      <li><b>「不能在当地就业」是硬约束。</b>多数数字游民签只允许你为境外雇主或客户工作，落地后顺手接本地公司的活，可能直接违反签证条件。</li>
+      <li><b>本页只帮你缩小范围，不预测结果。</b>各国按个案审核，条件对得上也未必获批，这里给的不是法律或移民意见。</li>
+      <li><b>这类签证基本都能自己在线递交</b>，不必经中介。凡是承诺「包过」的，先怀疑。</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><a href="index.html">← 回到完整版：全球出国路径筛选</a></p>
+    <p>开源项目 · MIT License · 欢迎 PR 补充路径和纠错</p>
+    <p><a href="https://github.com/RadishXN/run-abroad" target="_blank" rel="noopener noreferrer">GitHub 仓库</a></p>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/nomad.js"></script>
+</body>
+</html>

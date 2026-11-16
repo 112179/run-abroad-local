@@ -1,0 +1,67 @@
+name: Build unsigned IPA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: |
+          xcodegen generate
+          xcodebuild -list -project RunAbroadLocal.xcodeproj
+
+      - name: Build (code signing disabled)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project RunAbroadLocal.xcodeproj \
+            -scheme RunAbroadLocal \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            build 2>&1 | tee build.log | tail -n 40
+
+      - name: Report errors
+        if: failure()
+        run: |
+          grep -nE "error:" build.log | head -n 60 || true
+          tail -n 120 build.log || true
+
+      - name: Package IPA
+        run: |
+          APP_PATH=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -n 1)
+          if [ -z "$APP_PATH" ]; then echo "::error::no .app"; exit 1; fi
+          echo "app = $APP_PATH"
+          du -sh "$APP_PATH"
+          rm -rf out && mkdir -p out/Payload
+          cp -R "$APP_PATH" out/Payload/
+          cd out
+          zip -qry RunAbroadLocal-1.0-unsigned.ipa Payload
+          unzip -l RunAbroadLocal-1.0-unsigned.ipa | head -n 20
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RunAbroadLocal-unsigned-ipa
+          path: out/RunAbroadLocal-1.0-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
