@@ -29,7 +29,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate {
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
-        webView.allowsBackForwardGestures = true
+        webView.allowsBackForwardNavigationGestures = true
         view = webView
     }
 

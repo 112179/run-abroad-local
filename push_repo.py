@@ -25,20 +25,8 @@ def api(url, method="GET", payload=None):
         print(f"URLError {url}: {e.reason}", file=sys.stderr)
         raise
 
-# 1. create repo (fresh empty repo, no base tree)
-created = False
-try:
-    api("https://api.github.com/user/repos", "POST", {
-        "name": REPO, "private": False,
-        "description": "润学导航（run-abroad）离线 iOS 版：WKWebView 纯本地壳，无网络请求",
-        "auto_init": False})
-    print("repo created")
-    created = True
-except urllib.error.HTTPError as e:
-    if e.code == 422:
-        print("repo already exists")
-    else:
-        raise
+# 1. skip repo creation (already created); repo POST hits secondary rate limit
+created = True
 
 # 2. collect files
 files = []
@@ -51,8 +39,12 @@ for dirpath, dirnames, filenames in os.walk(ROOT):
             files.append(rel)
 files.sort()
 
-# 3. one tree + one commit
 parent = None
+try:
+    heads = api(f"https://api.github.com/repos/{OWNER}/{REPO}/git/matching-refs/heads/main")
+    parent = heads[0]["object"]["sha"] if heads else None
+except urllib.error.HTTPError:
+    pass
 # 2.5 empty repo: seed one file via Contents API to create the root commit
 if not parent:
     seed = open(os.path.join(ROOT, "README.md"), "rb").read()
