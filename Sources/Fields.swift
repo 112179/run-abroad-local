@@ -4,6 +4,7 @@ import SwiftUI
 
 // MARK: - 表单字段集合（三种风格共用同一套组件与绑定）
 
+@MainActor
 struct ProfileFieldBindings {
     var model: AppModel?
 
@@ -229,6 +230,7 @@ struct GoalFields: View {
 }
 
 // ProfileFieldBindings 需要能读 profile 本身
+@MainActor
 extension ProfileFieldBindings {
     var profileValue: Profile { model?.profile ?? Profile() }
 }
