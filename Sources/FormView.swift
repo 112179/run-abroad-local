@@ -7,7 +7,6 @@ struct FormView: View {
     @State private var showReset = false
     @State private var showSettings = false
 
-    private var b: ProfileFieldBindings { ProfileFieldBindings(model: model) }
 
     var body: some View {
         NavigationStack {
@@ -16,24 +15,24 @@ struct FormView: View {
                     hero
 
                     SectionCard(title: "基本情况", systemImage: "person.text.rectangle") {
-                        BasicFields(b: b)
+                        BasicFields(model: model)
                     }
                     SectionCard(title: "语言", systemImage: "character.bubble") {
-                        LanguageFields(b: b)
+                        LanguageFields(model: model)
                     }
                     SectionCard(title: "经验与资金", systemImage: "briefcase") {
-                        ExperienceFields(b: b)
+                        ExperienceFields(model: model)
                     }
                     SectionCard(title: "收入情况", systemImage: "banknote",
                                 note: "只用于判断数字游民 / 被动收入类路径") {
-                        IncomeFields(b: b)
+                        IncomeFields(model: model)
                     }
                     SectionCard(title: "技能方向", systemImage: "hammer",
                                 note: "可不选；选了会优先推荐对口路径") {
-                        SkillFields(b: b)
+                        SkillFields(model: model)
                     }
                     SectionCard(title: "你的目标", systemImage: "target") {
-                        GoalFields(b: b)
+                        GoalFields(model: model)
                     }
 
                     PrimaryButton(title: "看看我能走哪些路径", icon: "sparkle.magnifyingglass") {

@@ -7,7 +7,6 @@ struct WizardView: View {
     @State private var step = 0
     @State private var showSettings = false
 
-    private var b: ProfileFieldBindings { ProfileFieldBindings(model: model) }
     private let total = 6
 
     var body: some View {
@@ -106,37 +105,37 @@ struct WizardView: View {
 
     private var stepBasic: some View {
         stepCard("先说说你自己", subtitle: "年龄、学历和院校档位决定了一半的门槛 —— 也是唯一补不了的那部分。") {
-            BasicFields(b: b)
+            BasicFields(model: model)
         }
     }
 
     private var stepLanguage: some View {
         stepCard("语言能到哪一档", subtitle: "语言是绝大多数路径的开关，也是最快能补上的一项。") {
-            LanguageFields(b: b)
+            LanguageFields(model: model)
         }
     }
 
     private var stepExperience: some View {
         stepCard("经验和预算", subtitle: "工作年限能替代部分学历要求；预算决定要不要看打工度假和职教路径。") {
-            ExperienceFields(b: b)
+            ExperienceFields(model: model)
         }
     }
 
     private var stepIncome: some View {
         stepCard("有没有持续收入", subtitle: "这类问题只影响数字游民、被动收入签证 —— 没有的话直接跳过。") {
-            IncomeFields(b: b)
+            IncomeFields(model: model)
         }
     }
 
     private var stepSkill: some View {
         stepCard("你的专业方向", subtitle: "选了会优先推荐对应紧缺职业清单的路径，不选也没关系。") {
-            SkillFields(b: b)
+            SkillFields(model: model)
         }
     }
 
     private var stepGoal: some View {
         stepCard("你最想要什么", subtitle: "同样的条件下，目标不同排序完全不同：奔永居的和想尽快出去的不是同一批路径。") {
-            GoalFields(b: b)
+            GoalFields(model: model)
         }
     }
 }

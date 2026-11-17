@@ -1,12 +1,13 @@
 import SwiftUI
 
-// 表单字段绑定（三种风格共用）
-
-// MARK: - 表单字段集合（三种风格共用同一套组件与绑定）
+// MARK: - 表单字段绑定（三种风格共用统一套组件）
+//
+// 关键：这里所有 Binding 都在 get/set 里读写 AppModel（@Published），
+// 不把 model 直接嵌进视图 —— 否则 SwiftUI 观察不到变化，Stepper / 标签点了没反应。
 
 @MainActor
 struct ProfileFieldBindings {
-    var model: AppModel?
+    var model: AppModel
 
     var rankOptions: [(Int, String)] {
         [(50, "世界排名前 50"), (100, "前 100（QS100）"), (200, "前 200"),
@@ -28,42 +29,87 @@ struct ProfileFieldBindings {
     }
 
     var profile: Binding<Profile> {
-        Binding(get: { model?.profile ?? Profile() },
-                set: { if let m = model { m.profile = $0 } })
+        Binding(get: { self.model.profile }, set: { self.model.profile = $0 })
     }
 
-    var age: Binding<Int> { profile.age }
-    var degree: Binding<Int> { profile.degree }
-    var uniRank: Binding<Int> { profile.uniRank }
-    var ugRank: Binding<Int> { profile.ugRank }
-    var studyLoc: Binding<String> { profile.studyLoc }
-    var english: Binding<Int> { profile.english }
-    var french: Binding<Int> { profile.french }
-    var langs: Binding<[String]> { profile.langs }
-    var workExp: Binding<Int> { profile.workExp }
-    var funds: Binding<Int> { profile.funds }
-    var hasOffer: Binding<Bool> { profile.hasOffer }
-    var skills: Binding<[String]> { profile.skills }
-    var goals: Binding<[String]> { profile.goals }
+    var profileValue: Profile { model.profile }
+
+    // 逐字段绑定，setter 里整体赋值以触发 @Published
+    var age: Binding<Int> {
+        Binding(get: { self.model.profile.age },
+                set: { v in var p = self.model.profile; p.age = v; self.model.profile = p })
+    }
+    var degree: Binding<Int> {
+        Binding(get: { self.model.profile.degree },
+                set: { v in var p = self.model.profile; p.degree = v; self.model.profile = p })
+    }
+    var uniRank: Binding<Int> {
+        Binding(get: { self.model.profile.uniRank },
+                set: { v in var p = self.model.profile; p.uniRank = v; self.model.profile = p })
+    }
+    var ugRank: Binding<Int> {
+        Binding(get: { self.model.profile.ugRank },
+                set: { v in var p = self.model.profile; p.ugRank = v; self.model.profile = p })
+    }
+    var studyLoc: Binding<String> {
+        Binding(get: { self.model.profile.studyLoc },
+                set: { v in var p = self.model.profile; p.studyLoc = v; self.model.profile = p })
+    }
+    var yearsSinceGrad: Binding<Int?> {
+        Binding(get: { self.model.profile.yearsSinceGrad },
+                set: { v in var p = self.model.profile; p.yearsSinceGrad = v; self.model.profile = p })
+    }
+    var english: Binding<Int> {
+        Binding(get: { self.model.profile.english },
+                set: { v in var p = self.model.profile; p.english = v; self.model.profile = p })
+    }
+    var french: Binding<Int> {
+        Binding(get: { self.model.profile.french },
+                set: { v in var p = self.model.profile; p.french = v; self.model.profile = p })
+    }
+    var langs: Binding<[String]> {
+        Binding(get: { self.model.profile.langs },
+                set: { v in var p = self.model.profile; p.langs = v; self.model.profile = p })
+    }
+    var workExp: Binding<Int> {
+        Binding(get: { self.model.profile.workExp },
+                set: { v in var p = self.model.profile; p.workExp = v; self.model.profile = p })
+    }
+    var funds: Binding<Int> {
+        Binding(get: { self.model.profile.funds },
+                set: { v in var p = self.model.profile; p.funds = v; self.model.profile = p })
+    }
+    var hasOffer: Binding<Bool> {
+        Binding(get: { self.model.profile.hasOffer },
+                set: { v in var p = self.model.profile; p.hasOffer = v; self.model.profile = p })
+    }
+    var skills: Binding<[String]> {
+        Binding(get: { self.model.profile.skills },
+                set: { v in var p = self.model.profile; p.skills = v; self.model.profile = p })
+    }
+    var goals: Binding<[String]> {
+        Binding(get: { self.model.profile.goals },
+                set: { v in var p = self.model.profile; p.goals = v; self.model.profile = p })
+    }
 
     var incomeType: Binding<Int> {
         let map = ["none", "employee", "selfEmployed", "passive", "mixed"]
         return Binding(
             get: {
-                guard let t = profile.wrappedValue.incomeType,
+                guard let t = self.model.profile.incomeType,
                       let i = map.firstIndex(of: t) else { return 0 }
                 return i
             },
             set: { i in
-                var p = profile.wrappedValue
-                p.incomeType = map[i]
-                if !["employee", "selfEmployed", "mixed"].contains(map[i]) {
+                var p = self.model.profile
+                p.incomeType = map[min(max(i, 0), map.count - 1)]
+                if !["employee", "selfEmployed", "mixed"].contains(p.incomeType ?? "") {
                     p.remoteAbroad = nil
                     p.activeIncome = nil
                     p.primaryIncomeCountry = nil
                 }
-                if !["passive", "mixed"].contains(map[i]) { p.passiveIncome = nil }
-                profile.wrappedValue = p
+                if !["passive", "mixed"].contains(p.incomeType ?? "") { p.passiveIncome = nil }
+                self.model.profile = p
             })
     }
 
@@ -71,60 +117,60 @@ struct ProfileFieldBindings {
         let map = ["no", "uncertain", "yes"]
         return Binding(
             get: {
-                guard let r = profile.wrappedValue.remoteAbroad,
+                guard let r = self.model.profile.remoteAbroad,
                       let i = map.firstIndex(of: r) else { return 1 }
                 return i
             },
             set: { i in
-                var p = profile.wrappedValue
-                p.remoteAbroad = map[i]
-                if map[i] != "yes" {
+                var p = self.model.profile
+                p.remoteAbroad = map[min(max(i, 0), map.count - 1)]
+                if p.remoteAbroad != "yes" {
                     p.activeIncome = nil
                     p.primaryIncomeCountry = nil
                 }
-                profile.wrappedValue = p
+                self.model.profile = p
             })
     }
 
     var activeIncome: Binding<Int> {
-        Binding(get: { profile.wrappedValue.activeIncome ?? 0 },
-                set: { v in var p = profile.wrappedValue; p.activeIncome = v; profile.wrappedValue = p })
+        Binding(get: { self.model.profile.activeIncome ?? 0 },
+                set: { v in var p = self.model.profile; p.activeIncome = v; self.model.profile = p })
     }
 
     var passiveIncome: Binding<Int> {
-        Binding(get: { profile.wrappedValue.passiveIncome ?? 0 },
-                set: { v in var p = profile.wrappedValue; p.passiveIncome = v; profile.wrappedValue = p })
+        Binding(get: { self.model.profile.passiveIncome ?? 0 },
+                set: { v in var p = self.model.profile; p.passiveIncome = v; self.model.profile = p })
     }
 
     var incomeSource: Binding<Int> {
         let list = Store.orderedIncomeSources
         return Binding(
             get: {
-                guard let c = profile.wrappedValue.primaryIncomeCountry,
+                guard let c = self.model.profile.primaryIncomeCountry,
                       let i = list.firstIndex(of: c) else { return 0 }
                 return i
             },
             set: { i in
-                var p = profile.wrappedValue
+                var p = self.model.profile
                 p.primaryIncomeCountry = i < list.count ? list[i] : nil
-                profile.wrappedValue = p
+                self.model.profile = p
             })
     }
 }
 
 // MARK: - 可复用的字段块
 
-/// 基本情况
 struct BasicFields: View {
-    let b: ProfileFieldBindings
+    @ObservedObject var model: AppModel
 
     var body: some View {
+        let b = ProfileFieldBindings(model: model)
         Group {
-            AgeRow(profile: b.profile)
+            AgeRow(value: b.age)
             Divider()
             PickerRow(title: "最高学历", selection: b.degree,
                       options: Lexicon.degreeLabels.enumerated().map { ($0.offset, $0.element) })
-            if b.profileValue.degree > 3 {
+            if model.profile.degree > 3 {
                 Divider()
                 PickerRow(title: "本科院校", selection: b.ugRank, options: b.rankOptions)
             }
@@ -133,15 +179,16 @@ struct BasicFields: View {
             Divider()
             StringPickerRow(title: "学位取得地", selection: b.studyLoc, options: b.studyLocOptions)
             Divider()
-            GraduationRow(profile: b.profile)
+            GraduationRow(value: b.yearsSinceGrad)
         }
     }
 }
 
 struct LanguageFields: View {
-    let b: ProfileFieldBindings
+    @ObservedObject var model: AppModel
 
     var body: some View {
+        let b = ProfileFieldBindings(model: model)
         Group {
             PickerRow(title: "英语", selection: b.english,
                       options: Lexicon.engLabels.enumerated().map { ($0.offset, $0.element) })
@@ -156,9 +203,10 @@ struct LanguageFields: View {
 }
 
 struct ExperienceFields: View {
-    let b: ProfileFieldBindings
+    @ObservedObject var model: AppModel
 
     var body: some View {
+        let b = ProfileFieldBindings(model: model)
         Group {
             PickerRow(title: "工作经验", selection: b.workExp,
                       options: [(0, "应届 / 无全职经验"), (1, "1–2 年"), (3, "3–5 年"),
@@ -183,18 +231,19 @@ struct ExperienceFields: View {
 }
 
 struct IncomeFields: View {
-    let b: ProfileFieldBindings
+    @ObservedObject var model: AppModel
 
     var body: some View {
+        let b = ProfileFieldBindings(model: model)
         Group {
             PickerRow(title: "收入类型", selection: b.incomeType,
                       options: [(0, "暂无稳定收入"), (1, "受雇工资"),
                                 (2, "自由职业 / 自营"), (3, "被动收入"), (4, "多种收入")])
-            if b.profileValue.hasActiveIncome {
+            if model.profile.hasActiveIncome {
                 Divider()
                 PickerRow(title: "能否长期境外远程", selection: b.remoteAbroad,
                           options: [(0, "不能"), (1, "不确定"), (2, "可以")])
-                if b.profileValue.remoteAbroad == "yes" {
+                if model.profile.remoteAbroad == "yes" {
                     Divider()
                     PickerRow(title: "远程月收入", selection: b.activeIncome,
                               options: Lexicon.incomeBands.map { ($0.v, $0.t) })
@@ -204,7 +253,7 @@ struct IncomeFields: View {
                                 .map { ($0.offset, $0.element) })
                 }
             }
-            if b.profileValue.hasPassiveIncome {
+            if model.profile.hasPassiveIncome {
                 Divider()
                 PickerRow(title: "被动收入", selection: b.passiveIncome,
                           options: Lexicon.incomeBands.map { ($0.v, $0.t) })
@@ -214,23 +263,19 @@ struct IncomeFields: View {
 }
 
 struct SkillFields: View {
-    let b: ProfileFieldBindings
+    @ObservedObject var model: AppModel
 
     var body: some View {
-        ChipRow(title: nil, options: Lexicon.skillOptions, selection: b.skills, exclusive: "none")
+        ChipRow(title: nil, options: Lexicon.skillOptions,
+                selection: ProfileFieldBindings(model: model).skills, exclusive: "none")
     }
 }
 
 struct GoalFields: View {
-    let b: ProfileFieldBindings
+    @ObservedObject var model: AppModel
 
     var body: some View {
-        ChipRow(title: nil, options: Lexicon.goalOptions, selection: b.goals, exclusive: nil)
+        ChipRow(title: nil, options: Lexicon.goalOptions,
+                selection: ProfileFieldBindings(model: model).goals, exclusive: nil)
     }
-}
-
-// ProfileFieldBindings 需要能读 profile 本身
-@MainActor
-extension ProfileFieldBindings {
-    var profileValue: Profile { model?.profile ?? Profile() }
 }

@@ -256,7 +256,6 @@ struct ProfileEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var section = 0
 
-    private var b: ProfileFieldBindings { ProfileFieldBindings(model: model) }
     private let titles = ["基本", "语言", "经验", "收入", "技能", "目标"]
 
     var body: some View {
@@ -272,12 +271,12 @@ struct ProfileEditorSheet: View {
                 ScrollView {
                     VStack(spacing: 14) {
                         switch section {
-                        case 0: FieldGroup { BasicFields(b: b) }
-                        case 1: FieldGroup { LanguageFields(b: b) }
-                        case 2: FieldGroup { ExperienceFields(b: b) }
-                        case 3: FieldGroup { IncomeFields(b: b) }
-                        case 4: FieldGroup { SkillFields(b: b) }
-                        default: FieldGroup { GoalFields(b: b) }
+                        case 0: FieldGroup { BasicFields(model: model) }
+                        case 1: FieldGroup { LanguageFields(model: model) }
+                        case 2: FieldGroup { ExperienceFields(model: model) }
+                        case 3: FieldGroup { IncomeFields(model: model) }
+                        case 4: FieldGroup { SkillFields(model: model) }
+                        default: FieldGroup { GoalFields(model: model) }
                         }
                     }
                     .padding(16)

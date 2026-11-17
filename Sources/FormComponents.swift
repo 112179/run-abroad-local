@@ -231,30 +231,24 @@ struct ChipRow: View {
 // MARK: - 年龄 / 毕业年份 特殊行
 
 struct AgeRow: View {
-    @Binding var profile: Profile
+    @Binding var value: Int
 
     var body: some View {
         HStack(spacing: 12) {
             Text("年龄").font(.subheadline)
             Spacer()
-            Stepper(value: $profile.age, in: 15...80) {
-                Text("\(profile.age) 岁")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.accentColor)
-                    .monospacedDigit()
-            }
-            .labelsHidden()
-            Text("\(profile.age) 岁")
+            Text("\(value) 岁")
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(.accentColor)
+                .foregroundStyle(Color.accentColor)
                 .monospacedDigit()
-                .frame(minWidth: 48, alignment: .trailing)
+            Stepper("", value: $value, in: 15...80)
+                .labelsHidden()
         }
     }
 }
 
 struct GraduationRow: View {
-    @Binding var profile: Profile
+    @Binding var value: Int?
     @State private var showSheet = false
 
     private let options: [(Int, String)] = [
@@ -266,7 +260,7 @@ struct GraduationRow: View {
         (12, "毕业 10 年以上"),
     ]
 
-    private var current: Int { profile.yearsSinceGrad ?? -1 }
+    private var current: Int { value ?? -1 }
     private var label: String { options.first { $0.0 == current }?.1 ?? "—" }
 
     var body: some View {
@@ -274,7 +268,7 @@ struct GraduationRow: View {
             Text("毕业时间").font(.subheadline).frame(maxWidth: .infinity, alignment: .leading)
             Button { showSheet = true } label: {
                 HStack(spacing: 4) {
-                    Text(label).font(.subheadline.weight(.medium)).foregroundStyle(.accentColor)
+                    Text(label).font(.subheadline.weight(.medium)).foregroundStyle(Color.accentColor)
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.system(size: 10, weight: .semibold)).foregroundStyle(.tertiary)
                 }
@@ -287,19 +281,23 @@ struct GraduationRow: View {
             NavigationStack {
                 List(options, id: \.0) { opt in
                     Button {
-                        profile.yearsSinceGrad = opt.0 < 0 ? nil : opt.0
+                        value = opt.0 < 0 ? nil : opt.0
                         showSheet = false
                     } label: {
                         HStack {
                             Text(opt.1).foregroundStyle(.primary)
                             Spacer()
-                            if opt.0 == current { Image(systemName: "checkmark").foregroundStyle(.accentColor) }
+                            if opt.0 == current {
+                                Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
+                            }
                         }
                     }
                 }
                 .navigationTitle("毕业时间")
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("完成") { showSheet = false } } }
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) { Button("完成") { showSheet = false } }
+                }
             }
             .presentationDetents([.medium])
         }
