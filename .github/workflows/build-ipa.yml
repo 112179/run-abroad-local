@@ -55,13 +55,13 @@ jobs:
           rm -rf out && mkdir -p out/Payload
           cp -R "$APP_PATH" out/Payload/
           cd out
-          zip -qry RunAbroadLocal-2.2-unsigned.ipa Payload
-          unzip -l RunAbroadLocal-2.2-unsigned.ipa | head -n 20
+          zip -qry RunAbroadLocal-2.3-unsigned.ipa Payload
+          unzip -l RunAbroadLocal-2.3-unsigned.ipa | head -n 20
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: RunAbroadLocal-unsigned-ipa
-          path: out/RunAbroadLocal-2.2-unsigned.ipa
+          path: out/RunAbroadLocal-2.3-unsigned.ipa
           if-no-files-found: error
           retention-days: 30

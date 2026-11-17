@@ -24,41 +24,84 @@ enum Store {
 
         let decoder = JSONDecoder()
         // 1) 顶层结构（词库 + 路径数组）
-        guard let root = try? decoder.decode(Seed.self, from: data) else {
-            // 2) 顶层失败时，逐条解析路径，收集具体错误
-            let detail = diagnose(data: data)
+        do {
+            let root = try decoder.decode(Seed.self, from: data)
+            apply(root)
+            if root.pathways.isEmpty { return ([], .empty) }
+            return (root.pathways, nil)
+        } catch {
+            // 2) 顶层失败：先单独验证 pathways，再逐个顶层字段验证，定位真凶
+            let detail = diagnose(data: data, seedError: error)
             return ([], .decode(detail))
         }
-        apply(root)
-        if root.pathways.isEmpty { return ([], .empty) }
-        return (root.pathways, nil)
     }
 
-    /// 逐条容错：某一条路径字段不合规时只丢那一条，而不是整个 App 变成 0 条。
-    private static func diagnose(data: Data) -> String {
-        guard let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let raw = obj["pathways"] else { return "seed.json 顶层结构无法识别" }
-
-        guard let arr = raw as? [Any] else { return "pathways 不是数组" }
-        var okCount = 0
-        var firstError = ""
+    /// 定位顶层解码失败的具体字段：常见原因是某个词库字段的类型和 Swift 声明不一致
+    private static func diagnose(data: Data, seedError: Error) -> String {
+        guard let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return "seed.json 顶层不是对象：\(seedError)"
+        }
         let decoder = JSONDecoder()
-        for (idx, item) in arr.enumerated() {
-            guard let itemData = try? JSONSerialization.data(withJSONObject: item) else { continue }
-            do {
-                _ = try decoder.decode(Pathway.self, from: itemData)
-                okCount += 1
-            } catch {
-                if firstError.isEmpty {
+
+        // pathways 单条验证
+        if let arr = obj["pathways"] as? [Any] {
+            var okCount = 0
+            var firstError = ""
+            for (idx, item) in arr.enumerated() {
+                guard let itemData = try? JSONSerialization.data(withJSONObject: item) else { continue }
+                do {
+                    _ = try decoder.decode(Pathway.self, from: itemData)
+                    okCount += 1
+                } catch where firstError.isEmpty {
                     let id = (item as? [String: Any])?["id"] as? String ?? "#\(idx)"
                     firstError = "\(id): \(error)"
-                }
+                } catch {}
+            }
+            if okCount == arr.count, firstError.isEmpty {
+                return "pathways 全部 \(arr.count) 条可解析，问题在词库字段：\n\(seedError)"
+            }
+            return "pathways \(okCount)/\(arr.count) 条可解析；首个错误 \(firstError)"
+        }
+
+        // 逐个顶层键用 JSONDecoder 试解码，找出类型不符的字段
+        var suspects: [String] = []
+        for (key, value) in obj where key != "pathways" {
+            guard let kv = try? JSONSerialization.data(withJSONObject: [key: value]),
+                  (try? JSONSerialization.jsonObject(with: kv)) != nil else { continue }
+            if !fieldDecodes(key: key, valueData: kv) {
+                suspects.append(key)
             }
         }
-        if okCount > 0 {
-            return "共 \(arr.count) 条，其中 \(okCount) 条可解析；首个错误 \(firstError)"
+        let hint = suspects.isEmpty ? "" : "（疑似字段：\(suspects.joined(separator: ", "))）"
+        return "词库字段类型不符\(hint)：\n\(seedError)"
+    }
+
+    /// 单个顶层字段的类型校验（按声明类型分别尝试）
+    private static func fieldDecodes(key: String, valueData: Data) -> Bool {
+        let decoder = JSONDecoder()
+        func tryDecode<T: Decodable>(_ type: T.Type) -> Bool {
+            guard let whole = try? JSONSerialization.jsonObject(with: valueData) as? [String: Any],
+                  let raw = whole[key],
+                  let d = try? JSONSerialization.data(withJSONObject: raw) else { return false }
+            return (try? decoder.decode(T.self, from: d)) != nil
         }
-        return "全部 \(arr.count) 条解析失败；首个错误 \(firstError)"
+        switch key {
+        case "DEVELOPED":
+            return tryDecode([String].self)
+        case "MONTHLY_INCOME_BANDS":
+            return tryDecode([Lexicon.IncomeBand].self)
+        case "INCOME_SOURCE_LOCATIONS":
+            return tryDecode([String].self)
+        case "updated":
+            return tryDecode(String.self)
+        case "excludes":
+            return tryDecode([String: Seed.ExcludeInfo].self)
+        case "DEG", "ENG", "FRA", "LANGS", "STUDY_LOC", "SKILLS", "GOALS",
+             "REGION_LABEL", "REGION_OF", "TYPE_LABEL":
+            return tryDecode([String: String].self)
+        default:
+            return true
+        }
     }
 
     private static func apply(_ root: Seed) {
