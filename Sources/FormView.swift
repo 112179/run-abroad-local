@@ -12,6 +12,9 @@ struct FormView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 18) {
+                    if let err = Store.error {
+                        DataErrorBanner(error: err)
+                    }
                     hero
 
                     SectionCard(title: "基本情况", systemImage: "person.text.rectangle") {

@@ -81,6 +81,9 @@ struct ResultsView: View {
 
     private var summary: some View {
         VStack(alignment: .leading, spacing: 14) {
+            if let err = Store.error {
+                DataErrorBanner(error: err)
+            }
             HStack(spacing: 10) {
                 StatTile(value: "\(filtered.eligible.count)", title: "符合条件",
                          color: .green, icon: "checkmark.seal.fill")
@@ -157,6 +160,34 @@ private struct InfoBanner: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+/// 数据加载失败时明确告知原因（避免「全部 0 条」看不出问题）
+struct DataErrorBanner: View {
+    let error: StoreError
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("路径数据没能加载", systemImage: "exclamationmark.octagon.fill")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.red)
+            Text(detail)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var detail: String {
+        switch error {
+        case .missingFile: return "App 包里找不到 seed.json（打包问题）"
+        case .empty: return "seed.json 里 0 条路径"
+        case .decode(let msg): return msg
+        }
     }
 }
 
