@@ -72,9 +72,8 @@ enum Store {
         Lexicon.incomeBands = root.MONTHLY_INCOME_BANDS ?? []
         Lexicon.incomeSources = root.INCOME_SOURCE_LOCATIONS ?? []
         Lexicon.updated = root.updated ?? ""
-        Lexicon.excludes = (root.excludes ?? [:]).keys.sorted().compactMap { k in
-            guard let v = root.excludes?[k] else { return nil }
-            return (k, v.label, v.hint)
+        Lexicon.excludes = (root.excludes ?? [:]).sorted { $0.key < $1.key }.map { k, v in
+            (k, v.label, v.hint ?? "")
         }
     }
 
